@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package ergoryth.common.leads.v1;
+
+import "ergoryth/common/v1/uuid.proto";
+
+option go_package = "github.com/shimozukuri/ergoryth/backend/internal/generated/pb/ergoryth/common/leads/v1;commonleadsv1";
+
+message ID {
+  ergoryth.common.v1.UUID value = 1;
+}

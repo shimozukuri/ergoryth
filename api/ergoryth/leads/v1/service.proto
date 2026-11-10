@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package ergoryth.leads.v1;
+
+import "buf/validate/validate.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "ergoryth/common/leads/v1/id.proto";
+
+option go_package = "github.com/shimozukuri/ergoryth/backend/internal/generated/pb/ergoryth/leads/v1;leadsv1";
+
+service LeadService {
+  rpc CreateLead(CreateLeadRequest) returns (CreateLeadResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/leads"
+      body: "*"
+    };
+  }
+}
+
+message CreateLeadRequest {
+  option (buf.validate.message).cel = {
+    id: "contact_required"
+    message: "Email or phone is required"
+    expression:
+      "this.email != '' || this.phone != ''"
+  };
+
+  string name = 1 [
+    (buf.validate.field).string = {
+      min_len: 2
+      max_len: 100
+    }
+  ];
+
+  optional string email = 2 [
+    (buf.validate.field).string.email = true,
+    (buf.validate.field).string.max_len = 254
+  ];
+
+  optional string phone = 3 [
+    (buf.validate.field).string.pattern = "^\\+7[0-9]{10}$"
+  ];
+
+  optional string company = 4 [
+    (buf.validate.field).string.max_len = 150
+  ];
+
+  optional string message = 5 [
+    (buf.validate.field).string.max_len = 2000
+  ];
+}
+
+message CreateLeadResponse {
+  ergoryth.common.leads.v1.ID lead_id = 1;
+  google.protobuf.Timestamp created_at = 2;
+}
