@@ -22,7 +22,7 @@ func NewID(value uuid.UUID) (ID, error) {
 	return ID{value: value}, nil
 }
 
-func (id ID) isValid() bool {
+func (id ID) IsValid() bool {
 	return id.value != uuid.Nil
 }
 
