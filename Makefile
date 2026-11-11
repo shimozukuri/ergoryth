@@ -5,10 +5,11 @@ proto-lint:
 	@buf lint
 
 proto:
-	@make proto-lint
+	@make proto-lint && \
+	rm -rf .\backend\internal\generated && \
 	buf generate
 
 backend-run:
 	@cd backend && \
 	go mod tidy && \
-	go run cmd/ergoryth/main.go
+	go run cmd\ergoryth\main.go
