@@ -30,6 +30,7 @@ message CreateLeadRequest {
     (buf.validate.field).string = {
       min_len: 2
       max_len: 100
+      pattern: "^[^0-9]+$"
     }
   ];
 
