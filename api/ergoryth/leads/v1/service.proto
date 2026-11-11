@@ -39,7 +39,7 @@ message CreateLeadRequest {
   ];
 
   optional string phone = 3 [
-    (buf.validate.field).string.pattern = "^\\+7[0-9]{10}$"
+    (buf.validate.field).string.pattern = "^7[0-9]{10}$"
   ];
 
   optional string company = 4 [

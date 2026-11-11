@@ -157,12 +157,12 @@ var File_ergoryth_leads_v1_service_proto protoreflect.FileDescriptor
 
 const file_ergoryth_leads_v1_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1fergoryth/leads/v1/service.proto\x12\x11ergoryth.leads.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a!ergoryth/common/leads/v1/id.proto\"\xe4\x02\n" +
+	"\x1fergoryth/leads/v1/service.proto\x12\x11ergoryth.leads.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a!ergoryth/common/leads/v1/id.proto\"\xe2\x02\n" +
 	"\x11CreateLeadRequest\x12\x1d\n" +
 	"\x04name\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x02\x18dR\x04name\x12%\n" +
 	"\x05email\x18\x02 \x01(\tB\n" +
-	"\xbaH\ar\x05\x18\xfe\x01`\x01H\x00R\x05email\x88\x01\x01\x120\n" +
-	"\x05phone\x18\x03 \x01(\tB\x15\xbaH\x12r\x102\x0e^\\+7[0-9]{10}$H\x01R\x05phone\x88\x01\x01\x12'\n" +
+	"\xbaH\ar\x05\x18\xfe\x01`\x01H\x00R\x05email\x88\x01\x01\x12.\n" +
+	"\x05phone\x18\x03 \x01(\tB\x13\xbaH\x10r\x0e2\f^7[0-9]{10}$H\x01R\x05phone\x88\x01\x01\x12'\n" +
 	"\acompany\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\x96\x01H\x02R\acompany\x88\x01\x01\x12'\n" +
 	"\amessage\x18\x05 \x01(\tB\b\xbaH\x05r\x03\x18\xd0\x0fH\x03R\amessage\x88\x01\x01:Y\xbaHV\x1aT\n" +
 	"\x10contact_required\x12\x1aEmail or phone is required\x1a$this.email != '' || this.phone != ''B\b\n" +
