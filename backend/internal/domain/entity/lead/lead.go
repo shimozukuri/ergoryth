@@ -2,6 +2,7 @@ package lead
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -77,7 +78,8 @@ func NewLeadInitialized(
 
 func (l *Lead) Validate() error {
 	nameLen := utf8.RuneCountInString(l.name)
-	if nameLen < 2 || nameLen > 100 {
+	re := regexp.MustCompile("^[^0-9]+$")
+	if nameLen < 2 || nameLen > 100 || !re.MatchString(l.name) {
 		return fmt.Errorf(
 			"name length must be between 2 and 100, got %d: %w",
 			nameLen,
@@ -103,7 +105,7 @@ func (l *Lead) Validate() error {
 		)
 	}
 
-	if !l.id.isValid() {
+	if !l.id.IsValid() {
 		return fmt.Errorf(
 			"invalid lead id: %w",
 			internalerrors.ErrInvalidArgument,
