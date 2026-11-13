@@ -27,6 +27,21 @@ env-up:
 env-down:
 	@$(COMPOSE) down ergoryth-postgres
 
+env-cleanup:
+	@read -p "Clear all volume environment files? Risk of data loss. [y/N]: " ans; \
+	if [ "$$ans" = "y" ] || [ "$$ans" = "Y" ]; then \
+	  $(COMPOSE) down -v ergoryth-postgres port-forwarder && \
+	  echo "Environment volumes removed successfully"; \
+	else \
+	  echo "Cleanup is cancel"; \
+	fi
+
+env-port-forwarder:
+	@$(COMPOSE) up -d port-forwarder
+
+env-port-close:
+	@$(COMPOSE) down port-forwarder
+
 migrate-create:
 	@test -n "$(name)" || (echo "Usage: make migrate-create name=create_leads" && exit 1)
 	@$(COMPOSE) run --rm --no-deps $(MIGRATE_SERVICE) \
@@ -50,8 +65,3 @@ migrate-version:
 		-database "$(DATABASE_URL)" \
 		version
 
-env-port-forwarder:
-	@$(COMPOSE) up -d port-forwarder
-
-env-port-close:
-	@$(COMPOSE) down port-forwarder
