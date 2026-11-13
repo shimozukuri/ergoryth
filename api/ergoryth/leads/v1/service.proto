@@ -30,13 +30,15 @@ message CreateLeadRequest {
     (buf.validate.field).string = {
       min_len: 2
       max_len: 100
-      pattern: "^[^0-9]+$"
+      pattern: "^[\\p{L} -]*\\p{L}[\\p{L} -]*$"
     }
   ];
 
   optional string email = 2 [
-    (buf.validate.field).string.email = true,
-    (buf.validate.field).string.max_len = 254
+    (buf.validate.field).string = {
+      email: true
+      max_len: 254
+    }
   ];
 
   optional string phone = 3 [

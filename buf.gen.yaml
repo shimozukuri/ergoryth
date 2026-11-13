@@ -1,25 +1,20 @@
 version: v2
 
 plugins:
-  - remote: buf.build/protocolbuffers/go
+  - local: protoc-gen-go
     out: backend/internal/generated/pb
-    opt:
-      - paths=source_relative
+    opt: paths=source_relative
 
-  - remote: buf.build/grpc/go
+  - local: protoc-gen-go-grpc
     out: backend/internal/generated/pb
-    opt:
-      - paths=source_relative
+    opt: paths=source_relative
 
-  - remote: buf.build/grpc-ecosystem/gateway
+  - local: protoc-gen-grpc-gateway
     out: backend/internal/generated/pb
-    opt:
-      - paths=source_relative
+    opt: paths=source_relative
 
-  - remote: buf.build/grpc-ecosystem/openapiv2
-    out: frontend/openapi
+  - local: protoc-gen-openapiv2
+    out: backend/internal/generated/openapi
 
   - local: protoc-gen-goclay
     out: backend/internal/generated/pb
-    opt:
-      - paths=source_relative

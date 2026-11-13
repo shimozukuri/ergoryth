@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS ergoryth.leads;
+DROP SCHEMA IF EXISTS ergoryth;
