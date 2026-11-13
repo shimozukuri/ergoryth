@@ -78,7 +78,7 @@ func NewLeadInitialized(
 
 func (l *Lead) Validate() error {
 	nameLen := utf8.RuneCountInString(l.name)
-	re := regexp.MustCompile("^[^0-9]+$")
+	re := regexp.MustCompile("^[\\p{L} -]+$")
 	if nameLen < 2 || nameLen > 100 || !re.MatchString(l.name) {
 		return fmt.Errorf(
 			"name length must be between 2 and 100, got %d: %w",
