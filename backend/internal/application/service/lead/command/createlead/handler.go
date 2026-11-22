@@ -5,17 +5,18 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/shimozukuri/ergoryth/backend/internal/application/outbox"
 	"github.com/shimozukuri/ergoryth/backend/internal/domain/entity/lead"
 	"github.com/shimozukuri/ergoryth/backend/internal/domain/valueobject"
 )
 
 type Handler struct {
-	repository LeadRepository
+	transactionManager TransactionManager
 }
 
-func NewHandler(repository LeadRepository) *Handler {
+func NewHandler(transactionManager TransactionManager) *Handler {
 	return &Handler{
-		repository: repository,
+		transactionManager: transactionManager,
 	}
 }
 
@@ -74,11 +75,24 @@ func (h *Handler) Handle(
 		)
 	}
 
-	if err = h.repository.Save(ctx, leadDomain); err != nil {
-		return lead.ID{}, fmt.Errorf(
-			"save lead: %w",
-			err,
-		)
+	message := outbox.NewMessage(leadDomain.ID())
+
+	err = h.transactionManager.WithinTransaction(
+		ctx,
+		func(tx Transaction) error {
+			if err := tx.Leads().Save(ctx, leadDomain); err != nil {
+				return fmt.Errorf("save lead: %w", err)
+			}
+
+			if err := tx.Outbox().Save(ctx, message); err != nil {
+				return fmt.Errorf("save outbox message: %w", err)
+			}
+
+			return nil
+		},
+	)
+	if err != nil {
+		return lead.ID{}, fmt.Errorf("create lead: %w", err)
 	}
 
 	return leadDomain.ID(), nil

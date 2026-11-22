@@ -7,19 +7,34 @@ COMPOSE := docker compose -f deploy/docker-compose.yaml
 
 MIGRATE_SERVICE := ergoryth-postgres-migrate
 MIGRATIONS_DIR := /migrations
-DATABASE_URL := postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@ergoryth-postgres:5432/$(POSTGRES_DB)?sslmode=disable
+DATABASE_URL := postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@ergoryth-postgres:$(POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=disable
 
-.PHONY: proto-lint proto backend-run env-up env-down migrate-create migrate-up migrate-down migrate-version
+.PHONY: proto-lint proto backend-run integration-tests-run unit-tests-run tests-run env-up env-down env-cleanup env-port-forwarder env-port-close migrate-create migrate-up migrate-down migrate-version
 
 proto-lint:
 	@buf lint
 
 proto:
 	@$(MAKE) proto-lint
-	buf generate
+	@buf generate
 
 backend-run:
-	@cd backend && go run ./cmd/ergoryth
+	@cd backend && \
+	go run ./cmd/ergoryth
+
+integration-tests-run:
+	@$(MAKE) env-port-forwarder
+	@trap '$(MAKE) -C "$(CURDIR)" env-port-close' EXIT; \
+	cd ./backend/internal/infrastructure/persistence/postgres/pool/pgx && \
+	go test ./...
+
+unit-tests-run:
+	@cd ./backend/internal/application/service/ && \
+	go test ./...
+
+tests-run:
+	@$(MAKE) integration-tests-run
+	@$(MAKE) unit-tests-run
 
 env-up:
 	@$(COMPOSE) up -d ergoryth-postgres

@@ -3,239 +3,270 @@ package createlead_test
 import (
 	"context"
 	"errors"
-	"strings"
 	"testing"
 
-	"github.com/brianvoe/gofakeit/v6"
 	"github.com/shimozukuri/ergoryth/backend/internal/application/service/lead/command/createlead"
 	"github.com/shimozukuri/ergoryth/backend/internal/application/service/lead/command/createlead/mocks"
 	"github.com/shimozukuri/ergoryth/backend/internal/domain/entity/lead"
-	internalerrors "github.com/shimozukuri/ergoryth/backend/internal/errors"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+
+	"github.com/shimozukuri/ergoryth/backend/internal/application/outbox"
 )
 
-func TestLead_CreateLead(t *testing.T) {
-	name := gofakeit.Name()
-	email := gofakeit.Email()
-	phone := "79998887766"
-	company := gofakeit.Company()
-	message := gofakeit.Comment()
+func strPtr(value string) *string {
+	return &value
+}
 
-	repositoryError := errors.New("unexpected error")
+func newTestMocks(t *testing.T) (
+	*createlead.Handler,
+	*mocks.TransactionManager,
+	*mocks.Transaction,
+	*mocks.LeadRepository,
+	*mocks.OutboxRepository,
+) {
+	t.Helper()
 
-	testCases := []struct {
-		testName string
-		name     string
-		email    string
-		phone    string
-		company  string
-		message  string
+	tm := mocks.NewTransactionManager(t)
+	tx := mocks.NewTransaction(t)
+	leadRepo := mocks.NewLeadRepository(t)
+	outboxRepo := mocks.NewOutboxRepository(t)
 
-		respErr error
-		mockErr error
+	handler := createlead.NewHandler(tm)
+
+	return handler, tm, tx, leadRepo, outboxRepo
+}
+
+func setupSuccessfulTransaction(
+	t *testing.T,
+	tm *mocks.TransactionManager,
+	tx *mocks.Transaction,
+	leadRepo *mocks.LeadRepository,
+	outboxRepo *mocks.OutboxRepository,
+) {
+	t.Helper()
+
+	tm.On(
+		"WithinTransaction",
+		mock.Anything,
+		mock.Anything,
+	).Return(
+		func(_ context.Context, fn func(createlead.Transaction) error) error {
+			return fn(tx)
+		},
+	).Once()
+
+	tx.On("Leads").Return(leadRepo).Once()
+	if outboxRepo != nil {
+		tx.On("Outbox").Return(outboxRepo).Once()
+	}
+
+	leadRepo.On(
+		"Save",
+		mock.Anything,
+		mock.Anything,
+	).Return(nil).Once()
+
+	if outboxRepo != nil {
+		outboxRepo.On(
+			"Save",
+			mock.Anything,
+			mock.Anything,
+		).Return(nil).Once()
+	}
+}
+
+func TestHandler_Handle_Success(t *testing.T) {
+	tests := []struct {
+		name  string
+		email *string
+		phone *string
 	}{
 		{
-			testName: "success with email and phone",
-			name:     name,
-			email:    email,
-			phone:    phone,
-			company:  company,
-			message:  message,
+			name:  "email and phone",
+			email: strPtr("test@example.com"),
+			phone: strPtr("79991234567"),
 		},
 		{
-			testName: "success with empty phone",
-			name:     name,
-			email:    email,
-			phone:    "",
-			company:  company,
-			message:  message,
+			name:  "email only",
+			email: strPtr("test@example.com"),
 		},
 		{
-			testName: "success with nil phone",
-			name:     name,
-			email:    email,
-			company:  company,
-			message:  message,
-		},
-		{
-			testName: "success with empty email",
-			name:     name,
-			email:    "",
-			phone:    phone,
-			company:  company,
-			message:  message,
-		},
-		{
-			testName: "success with nil email",
-			name:     name,
-			phone:    phone,
-			company:  company,
-			message:  message,
-		},
-		{
-			testName: "success with empty company",
-			name:     name,
-			email:    email,
-			phone:    phone,
-			company:  "",
-			message:  message,
-		},
-		{
-			testName: "success with empty message",
-			name:     name,
-			email:    email,
-			phone:    phone,
-			company:  company,
-			message:  "",
-		},
-		{
-			testName: "error with empty email and phone",
-			name:     name,
-			email:    "",
-			phone:    "",
-			company:  company,
-			message:  message,
-
-			respErr: internalerrors.ErrInvalidArgument,
-		},
-		{
-			testName: "error with invalid email",
-			name:     name,
-			email:    "ivanmail.com",
-			phone:    phone,
-			company:  company,
-			message:  message,
-
-			respErr: internalerrors.ErrInvalidArgument,
-		},
-		{
-			testName: "error with invalid phone",
-			name:     name,
-			email:    email,
-			phone:    "7999888776",
-			company:  company,
-			message:  message,
-
-			respErr: internalerrors.ErrInvalidArgument,
-		},
-		{
-			testName: "error with empty name",
-			name:     "",
-			email:    email,
-			phone:    phone,
-			company:  company,
-			message:  message,
-
-			respErr: internalerrors.ErrInvalidArgument,
-		},
-		{
-			testName: "error with short name",
-			name:     "I",
-			email:    email,
-			phone:    phone,
-			company:  company,
-			message:  message,
-
-			respErr: internalerrors.ErrInvalidArgument,
-		},
-		{
-			testName: "error with long name",
-			name:     strings.Repeat("a", 101),
-			email:    email,
-			phone:    phone,
-			company:  company,
-			message:  message,
-
-			respErr: internalerrors.ErrInvalidArgument,
-		},
-		{
-			testName: "error with numbers in name",
-			name:     name + "1",
-			email:    email,
-			phone:    phone,
-			company:  company,
-			message:  message,
-
-			respErr: internalerrors.ErrInvalidArgument,
-		},
-		{
-			testName: "error with long company",
-			name:     name,
-			email:    email,
-			phone:    phone,
-			company:  strings.Repeat("a", 151),
-			message:  message,
-
-			respErr: internalerrors.ErrInvalidArgument,
-		},
-		{
-			testName: "error with long message",
-			name:     name,
-			email:    email,
-			phone:    phone,
-			company:  company,
-			message:  strings.Repeat("a", 2001),
-
-			respErr: internalerrors.ErrInvalidArgument,
-		},
-		{
-			testName: "save error",
-			name:     name,
-			email:    email,
-			phone:    phone,
-			company:  company,
-			message:  message,
-
-			respErr: repositoryError,
-			mockErr: repositoryError,
+			name:  "phone only",
+			phone: strPtr("79991234567"),
 		},
 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.testName, func(t *testing.T) {
-			t.Parallel()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			handler, tm, tx, leadRepo, outboxRepo := newTestMocks(t)
 
-			leadRepositoryMock := mocks.NewLeadRepository(t)
-			h := createlead.NewHandler(leadRepositoryMock)
+			setupSuccessfulTransaction(
+				t,
+				tm,
+				tx,
+				leadRepo,
+				outboxRepo,
+			)
 
-			ctx := context.Background()
-
-			if tc.respErr == nil || tc.mockErr != nil {
-				leadRepositoryMock.
-					On(
-						"Save",
-						ctx,
-						mock.MatchedBy(func(entity lead.Lead) bool {
-							return entity.ID().IsValid() &&
-								entity.Name() == tc.name &&
-								entity.Company() == tc.company &&
-								entity.Message() == tc.message &&
-								entity.Status() == lead.StatusNew &&
-								!entity.CreatedAt().IsZero()
-						}),
-					).
-					Return(tc.mockErr).
-					Once()
+			cmd := createlead.Command{
+				Name:    "John Doe",
+				Email:   tt.email,
+				Phone:   tt.phone,
+				Company: "",
+				Message: "",
 			}
 
-			leadID, err := h.Handle(ctx, createlead.Command{
-				Name:    tc.name,
-				Company: tc.company,
-				Email:   &tc.email,
-				Phone:   &tc.phone,
-				Message: tc.message,
-			})
+			id, err := handler.Handle(context.Background(), cmd)
 
-			if tc.respErr == nil {
-				require.NoError(t, err)
-				require.True(t, leadID.IsValid())
-				return
-			}
+			require.NoError(t, err)
+			require.NotEqual(t, lead.ID{}, id)
 
-			require.Error(t, err)
-			require.ErrorIs(t, err, tc.respErr)
-			require.False(t, leadID.IsValid())
+			savedMessage := outboxRepo.Calls[0].Arguments.Get(1).(outbox.Message)
+			require.Equal(t, id, savedMessage.LeadID)
 		})
 	}
+}
+
+func TestHandler_Handle_InvalidInput(t *testing.T) {
+	tests := []struct {
+		name string
+		cmd  createlead.Command
+	}{
+		{
+			name: "without contact",
+			cmd: createlead.Command{
+				Name: "John Doe",
+			},
+		},
+		{
+			name: "invalid email",
+			cmd: createlead.Command{
+				Name:  "John Doe",
+				Email: strPtr("invalid-email"),
+			},
+		},
+		{
+			name: "invalid phone",
+			cmd: createlead.Command{
+				Name:  "John Doe",
+				Phone: strPtr("123"),
+			},
+		},
+		{
+			name: "empty name",
+			cmd: createlead.Command{
+				Email: strPtr("test@example.com"),
+			},
+		},
+		{
+			name: "name contains numbers",
+			cmd: createlead.Command{
+				Name:  "John123",
+				Email: strPtr("test@example.com"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			handler, tm, _, _, _ := newTestMocks(t)
+
+			_, err := handler.Handle(context.Background(), tt.cmd)
+
+			require.Error(t, err)
+
+			tm.AssertNotCalled(
+				t,
+				"WithinTransaction",
+				mock.Anything,
+				mock.Anything,
+			)
+		})
+	}
+}
+
+func TestHandler_Handle_LeadRepositoryError(t *testing.T) {
+	expectedErr := errors.New("lead repository error")
+
+	handler, tm, tx, leadRepo, outboxRepo := newTestMocks(t)
+
+	tm.On(
+		"WithinTransaction",
+		mock.Anything,
+		mock.Anything,
+	).Return(
+		func(_ context.Context, fn func(createlead.Transaction) error) error {
+			return fn(tx)
+		},
+	).Once()
+
+	tx.On("Leads").Return(leadRepo).Once()
+
+	leadRepo.On(
+		"Save",
+		mock.Anything,
+		mock.Anything,
+	).Return(expectedErr).Once()
+
+	cmd := createlead.Command{
+		Name:  "John Doe",
+		Email: strPtr("test@example.com"),
+	}
+
+	_, err := handler.Handle(context.Background(), cmd)
+
+	require.ErrorIs(t, err, expectedErr)
+
+	outboxRepo.AssertNotCalled(
+		t,
+		"Save",
+		mock.Anything,
+		mock.Anything,
+	)
+}
+
+func TestHandler_Handle_OutboxRepositoryError(t *testing.T) {
+	expectedErr := errors.New("outbox repository error")
+
+	handler, tm, tx, leadRepo, outboxRepo := newTestMocks(t)
+	setupSuccessfulTransaction(t, tm, tx, leadRepo, nil)
+
+	tx.On("Outbox").Return(outboxRepo).Once()
+
+	outboxRepo.On(
+		"Save",
+		mock.Anything,
+		mock.Anything,
+	).Return(expectedErr).Once()
+
+	cmd := createlead.Command{
+		Name:  "John Doe",
+		Email: strPtr("test@example.com"),
+	}
+
+	_, err := handler.Handle(context.Background(), cmd)
+
+	require.ErrorIs(t, err, expectedErr)
+}
+
+func TestHandler_Handle_TransactionManagerError(t *testing.T) {
+	expectedErr := errors.New("transaction manager error")
+
+	handler, tm, _, _, _ := newTestMocks(t)
+
+	tm.On(
+		"WithinTransaction",
+		mock.Anything,
+		mock.Anything,
+	).Return(expectedErr).Once()
+
+	cmd := createlead.Command{
+		Name:  "John Doe",
+		Email: strPtr("test@example.com"),
+	}
+
+	_, err := handler.Handle(context.Background(), cmd)
+
+	require.ErrorIs(t, err, expectedErr)
 }

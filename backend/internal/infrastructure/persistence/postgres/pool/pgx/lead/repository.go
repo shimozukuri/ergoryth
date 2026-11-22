@@ -5,13 +5,13 @@ import (
 )
 
 type Repository struct {
-	pool pgx.Pool
+	executor *pgx.Executor
 }
 
 func NewRepository(
-	pool pgx.Pool,
+	executor *pgx.Executor,
 ) *Repository {
 	return &Repository{
-		pool: pool,
+		executor: executor,
 	}
 }

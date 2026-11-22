@@ -12,7 +12,6 @@ import (
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -104,7 +103,6 @@ func (x *CreateLeadRequest) GetMessage() string {
 type CreateLeadResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	LeadId        *v1.ID                 `protobuf:"bytes,1,opt,name=lead_id,json=leadId,proto3" json:"lead_id,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -146,18 +144,11 @@ func (x *CreateLeadResponse) GetLeadId() *v1.ID {
 	return nil
 }
 
-func (x *CreateLeadResponse) GetCreatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CreatedAt
-	}
-	return nil
-}
-
 var File_ergoryth_leads_v1_service_proto protoreflect.FileDescriptor
 
 const file_ergoryth_leads_v1_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1fergoryth/leads/v1/service.proto\x12\x11ergoryth.leads.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a!ergoryth/common/leads/v1/id.proto\"\xff\x02\n" +
+	"\x1fergoryth/leads/v1/service.proto\x12\x11ergoryth.leads.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a!ergoryth/common/leads/v1/id.proto\"\xff\x02\n" +
 	"\x11CreateLeadRequest\x12:\n" +
 	"\x04name\x18\x01 \x01(\tB&\xbaH#r!\x10\x02\x18d2\x1b^[\\p{L} -]*\\p{L}[\\p{L} -]*$R\x04name\x12%\n" +
 	"\x05email\x18\x02 \x01(\tB\n" +
@@ -171,11 +162,9 @@ const file_ergoryth_leads_v1_service_proto_rawDesc = "" +
 	"\n" +
 	"\b_companyB\n" +
 	"\n" +
-	"\b_message\"\x86\x01\n" +
+	"\b_message\"K\n" +
 	"\x12CreateLeadResponse\x125\n" +
-	"\alead_id\x18\x01 \x01(\v2\x1c.ergoryth.common.leads.v1.IDR\x06leadId\x129\n" +
-	"\n" +
-	"created_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt2\x82\x01\n" +
+	"\alead_id\x18\x01 \x01(\v2\x1c.ergoryth.common.leads.v1.IDR\x06leadId2\x82\x01\n" +
 	"\vLeadService\x12s\n" +
 	"\n" +
 	"CreateLead\x12$.ergoryth.leads.v1.CreateLeadRequest\x1a%.ergoryth.leads.v1.CreateLeadResponse\"\x18\x82\xd3\xe4\x93\x02\x12:\x01*\"\r/api/v1/leadsBYZWgithub.com/shimozukuri/ergoryth/backend/internal/generated/pb/ergoryth/leads/v1;leadsv1b\x06proto3"
@@ -194,21 +183,19 @@ func file_ergoryth_leads_v1_service_proto_rawDescGZIP() []byte {
 
 var file_ergoryth_leads_v1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_ergoryth_leads_v1_service_proto_goTypes = []any{
-	(*CreateLeadRequest)(nil),     // 0: ergoryth.leads.v1.CreateLeadRequest
-	(*CreateLeadResponse)(nil),    // 1: ergoryth.leads.v1.CreateLeadResponse
-	(*v1.ID)(nil),                 // 2: ergoryth.common.leads.v1.ID
-	(*timestamppb.Timestamp)(nil), // 3: google.protobuf.Timestamp
+	(*CreateLeadRequest)(nil),  // 0: ergoryth.leads.v1.CreateLeadRequest
+	(*CreateLeadResponse)(nil), // 1: ergoryth.leads.v1.CreateLeadResponse
+	(*v1.ID)(nil),              // 2: ergoryth.common.leads.v1.ID
 }
 var file_ergoryth_leads_v1_service_proto_depIdxs = []int32{
 	2, // 0: ergoryth.leads.v1.CreateLeadResponse.lead_id:type_name -> ergoryth.common.leads.v1.ID
-	3, // 1: ergoryth.leads.v1.CreateLeadResponse.created_at:type_name -> google.protobuf.Timestamp
-	0, // 2: ergoryth.leads.v1.LeadService.CreateLead:input_type -> ergoryth.leads.v1.CreateLeadRequest
-	1, // 3: ergoryth.leads.v1.LeadService.CreateLead:output_type -> ergoryth.leads.v1.CreateLeadResponse
-	3, // [3:4] is the sub-list for method output_type
-	2, // [2:3] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	0, // 1: ergoryth.leads.v1.LeadService.CreateLead:input_type -> ergoryth.leads.v1.CreateLeadRequest
+	1, // 2: ergoryth.leads.v1.LeadService.CreateLead:output_type -> ergoryth.leads.v1.CreateLeadResponse
+	2, // [2:3] is the sub-list for method output_type
+	1, // [1:2] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_ergoryth_leads_v1_service_proto_init() }

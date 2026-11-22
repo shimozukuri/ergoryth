@@ -4,7 +4,6 @@ package ergoryth.leads.v1;
 
 import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
-import "google/protobuf/timestamp.proto";
 import "ergoryth/common/leads/v1/id.proto";
 
 option go_package = "github.com/shimozukuri/ergoryth/backend/internal/generated/pb/ergoryth/leads/v1;leadsv1";
@@ -23,7 +22,7 @@ message CreateLeadRequest {
     id: "contact_required"
     message: "Email or phone is required"
     expression:
-      "this.email != '' || this.phone != ''"
+        "this.email != '' || this.phone != ''"
   };
 
   string name = 1 [
@@ -56,5 +55,4 @@ message CreateLeadRequest {
 
 message CreateLeadResponse {
   ergoryth.common.leads.v1.ID lead_id = 1;
-  google.protobuf.Timestamp created_at = 2;
 }
