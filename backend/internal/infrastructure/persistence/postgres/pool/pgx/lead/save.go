@@ -10,14 +10,14 @@ import (
 const saveQuery = `
 		INSERT INTO ergoryth.leads 
 			(id, name, email, phone, company, message, status, created_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 	`
 
 func (r *Repository) Save(
 	ctx context.Context,
 	lead lead.Lead,
 ) error {
-	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
+	ctx, cancel := context.WithTimeout(ctx, r.executor.OpTimeout())
 	defer cancel()
 
 	var email *string
@@ -31,11 +31,11 @@ func (r *Repository) Save(
 		phone = new(value.String())
 	}
 
-	_, err := r.pool.Exec(
+	_, err := r.executor.Exec(
 		ctx,
 		saveQuery,
-		lead.ID,
-		lead.Name,
+		lead.ID().UUID(),
+		lead.Name(),
 		email,
 		phone,
 		lead.Company(),

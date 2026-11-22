@@ -103,10 +103,6 @@
       "properties": {
         "leadId": {
           "$ref": "#/definitions/v1ID"
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
         }
       }
     },

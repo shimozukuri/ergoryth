@@ -8,6 +8,8 @@ import (
 )
 
 type Config struct {
+	Host     string        `envconfig:"HOST" default:"localhost"`
+	Port     int16         `envconfig:"PORT" default:"5432"`
 	User     string        `envconfig:"USER" required:"true"`
 	Password string        `envconfig:"PASSWORD" required:"true"`
 	Database string        `envconfig:"DATABASE" required:"true"`
@@ -27,7 +29,7 @@ func NewConfig() (Config, error) {
 	return conf, nil
 }
 
-func NewConfigFromEnv() Config {
+func NewConfigMust() Config {
 	conf, err := NewConfig()
 
 	if err != nil {

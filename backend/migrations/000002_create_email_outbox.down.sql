@@ -1,0 +1,1 @@
+DROP TABLE ergoryth.email_outbox;

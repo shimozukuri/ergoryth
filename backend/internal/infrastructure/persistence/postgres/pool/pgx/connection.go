@@ -3,26 +3,35 @@ package pgx
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type Pool struct {
-	*pgxpool.Pool
+type Executor struct {
+	DBTX
 	opTimeout time.Duration
 }
 
-func NewPool(
+func NewExecutor(
 	ctx context.Context,
 	conf Config,
-) (*Pool, error) {
-	connectionString := fmt.Sprintf(
-		"postgres://%s:%s@localhost:5432/%s?sslmode=disable",
-		conf.User,
-		conf.Password,
-		conf.Database,
-	)
+) (*Executor, error) {
+	connectionUrl := url.URL{
+		Scheme: "postgres",
+		User:   url.UserPassword(conf.User, conf.Password),
+		Host:   fmt.Sprintf("%s:%d", conf.Host, conf.Port),
+		Path:   "/" + conf.Database,
+	}
+
+	connectionParams := url.Values{}
+	connectionParams.Set("sslmode", "disable")
+
+	connectionUrl.RawQuery = connectionParams.Encode()
+
+	connectionString := connectionUrl.String()
 
 	pgxconf, err := pgxpool.ParseConfig(connectionString)
 	if err != nil {
@@ -41,18 +50,27 @@ func NewPool(
 	}
 
 	if err = pool.Ping(ctx); err != nil {
+		pool.Close()
+
 		return nil, fmt.Errorf(
 			"ping pgxpool: %w",
 			err,
 		)
 	}
 
-	return &Pool{
+	return &Executor{
 		pool,
 		conf.Timeout,
 	}, nil
 }
 
-func (p *Pool) OpTimeout() time.Duration {
+func (p *Executor) WithTx(tx pgx.Tx) *Executor {
+	return &Executor{
+		tx,
+		p.opTimeout,
+	}
+}
+
+func (p *Executor) OpTimeout() time.Duration {
 	return p.opTimeout
 }
